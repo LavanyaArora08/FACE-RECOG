@@ -1,0 +1,44 @@
+import os
+import cv2
+import numpy as np
+import tensorflow as tf
+
+# Define the image dimensions and batch size for training
+IMG_WIDTH = 128
+IMG_HEIGHT = 128
+BATCH_SIZE = 32
+
+# Load the male and female images and labels
+male_images = []
+for filename in os.listdir("C:/Users/arora/Desktop/Programs/FACE RECOG/Training/male"):
+    img = cv2.imread(os.path.join("C:/Users/arora/Desktop/Programs/FACE RECOG/Training/male", filename))
+    img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+    img = img / 255.0
+    male_images.append(img)
+male_labels = np.zeros(len(male_images))
+
+female_images = []
+for filename in os.listdir("C:/Users/arora/Desktop/Programs/FACE RECOG/Training/female"):
+    img = cv2.imread(os.path.join("C:/Users/arora/Desktop/Programs/FACE RECOG/Training/female", filename))
+    img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+    img = img / 255.0
+    female_images.append(img)
+female_labels = np.ones(len(female_images))
+
+# Combine the male and female images and labels into a single dataset
+images = np.array(male_images + female_images)
+labels = np.concatenate([male_labels, female_labels])
+
+# Shuffle the dataset
+idx = np.random.permutation(len(images))
+images = images[idx]
+labels = labels[idx]
+
+# Load the previously trained model
+model = tf.keras.models.load_model("C:/Users/arora/Desktop/Programs/FACE RECOG/gender_model.h5")
+
+# Train the model on the updated dataset for 10 epochs
+model.fit(images, labels, batch_size=BATCH_SIZE, epochs=10)
+
+# Save the updated model to disk
+model.save("gender_model.h5")
